@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Evaluation Form</title>
-    <style>
-        /* Add your custom styling here */
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <h1>Task Evaluation Form</h1>
@@ -20,7 +18,7 @@
 
         <label for="remarks">Remarks:</label>
         <ul id="remarks"></ul>
-        <input type="text" id="remarkInput" placeholder="Enter remark">
+        <textarea id="remarkInput" placeholder="Enter remark"></textarea>
         <br>
 
         <!-- Navigation buttons -->
@@ -53,15 +51,27 @@
         }
 
         // Function to update form fields based on task index
-        function updateFormFields() {
-            document.getElementById('taskNumber').value = tasks[currentTaskIndex].taskNumber;
-            remarksList.innerHTML = '';
-            tasks[currentTaskIndex].remarks.forEach((remark) => {
-                const remarkListItem = document.createElement('li');
-                remarkListItem.textContent = remark;
-                remarksList.appendChild(remarkListItem);
-            });
-        }
+function updateFormFields() {
+    document.getElementById('taskNumber').value = tasks[currentTaskIndex].taskNumber;
+    remarksList.innerHTML = '';
+    const remarksUl = document.createElement('ul');
+    tasks[currentTaskIndex].remarks.forEach((remark, index) => {
+        const remarkLi = document.createElement('li');
+        remarkLi.textContent = remark;
+        const remarkTextarea = document.createElement('textarea');
+        remarkTextarea.value = remark;
+        remarkTextarea.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                tasks[currentTaskIndex].remarks[index] = event.target.value;
+                updateFormFields();
+                event.preventDefault(); // prevent default Enter key behavior
+            }
+        });
+        remarkLi.appendChild(remarkTextarea);
+        remarksUl.appendChild(remarkLi);
+    });
+    remarksList.appendChild(remarksUl);
+}
 
         // Event listener for adding remarks
         remarkInput.addEventListener('keypress', (event) => {
@@ -72,6 +82,7 @@
                     remarkInput.value = '';
                     updateFormFields();
                 }
+                event.preventDefault(); // prevent default Enter key behavior
             }
         });
 
