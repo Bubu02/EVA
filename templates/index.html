@@ -20,7 +20,7 @@
         <label for="remarks">Remarks:</label>
         <ul id="remarks"></ul>
         <textarea id="remarkInput" placeholder="Enter remark"></textarea>
-        <br>
+        <input type="file" id="imageInput" accept="image/*"><br>
 
         <!-- Navigation buttons -->
         <button type="button" id="previousBtn">Previous</button>
@@ -38,11 +38,13 @@
         const submitBtn = document.getElementById('submitBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const remarkInput = document.getElementById('remarkInput');
+        const imageInput = document.getElementById('imageInput');
         const remarksList = document.getElementById('remarks');
 
         // Initialize task index and tasks data
         let currentTaskIndex = 0;
         let tasks = [];
+        let savedEmail = "";
 
         // Function to add a new task
         function addTask(taskNumber) {
@@ -58,34 +60,59 @@
         // Function to update form fields based on task index
         function updateFormFields() {
             document.getElementById('taskNumber').value = tasks[currentTaskIndex].taskNumber;
+            document.getElementById('email').value = savedEmail;
             remarksList.innerHTML = '';
-            const remarksUl = document.createElement('ul');
             tasks[currentTaskIndex].remarks.forEach((remark, index) => {
                 const remarkLi = document.createElement('li');
-                remarkLi.textContent = remark;
                 const remarkTextarea = document.createElement('textarea');
-                remarkTextarea.value = remark;
+                remarkTextarea.value = remark.text;
                 remarkTextarea.addEventListener('keypress', (event) => {
                     if (event.key === 'Enter') {
-                        tasks[currentTaskIndex].remarks[index] = event.target.value;
+                        tasks[currentTaskIndex].remarks[index].text = event.target.value;
                         updateFormFields();
                         event.preventDefault(); // prevent default Enter key behavior
                     }
                 });
                 remarkLi.appendChild(remarkTextarea);
-                remarksUl.appendChild(remarkLi);
+
+                if (remark.image) {
+                    const img = document.createElement('img');
+                    img.src = remark.image;
+                    img.style.maxWidth = '300px';
+                    remarkLi.appendChild(img);
+                }
+
+                remarksList.appendChild(remarkLi);
             });
-            remarksList.appendChild(remarksUl);
         }
 
         // Event listener for adding remarks
         remarkInput.addEventListener('keypress', (event) => {
             if (event.key === 'Enter') {
                 const remark = remarkInput.value.trim();
+                const image = imageInput.files[0];
+
                 if (remark) {
-                    tasks[currentTaskIndex].remarks.push(remark);
-                    remarkInput.value = '';
-                    updateFormFields();
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        tasks[currentTaskIndex].remarks.push({
+                            text: remark,
+                            image: e.target.result
+                        });
+                        remarkInput.value = '';
+                        imageInput.value = '';
+                        updateFormFields();
+                    };
+                    if (image) {
+                        reader.readAsDataURL(image);
+                    } else {
+                        tasks[currentTaskIndex].remarks.push({
+                            text: remark,
+                            image: null
+                        });
+                        remarkInput.value = '';
+                        updateFormFields();
+                    }
                 }
                 event.preventDefault(); // prevent default Enter key behavior
             }
@@ -110,6 +137,7 @@
         form.addEventListener('submit', (event) => {
             event.preventDefault();
             const email = document.getElementById('email').value;
+            savedEmail = email; // Save email to retain after submission
             const evaluations = tasks.map((task) => ({ taskNumber: task.taskNumber, remarks: task.remarks }));
 
             // Generate PDF
@@ -123,8 +151,25 @@
                     doc.addPage();
                 }
                 doc.text(`Task Number: ${evaluation.taskNumber}`, 10, 20);
+                let yPosition = 30; // Initial y position
                 evaluation.remarks.forEach((remark, remarkIndex) => {
-                    doc.text(`Remark ${remarkIndex + 1}: ${remark}`, 10, 30 + remarkIndex * 10);
+                    let text = remark.text;
+                    let parts = text.split('*');
+                    let currentXPosition = 10;
+                    parts.forEach((part, partIndex) => {
+                        if (partIndex % 2 === 1) {
+                            doc.setTextColor(255, 0, 0);
+                        } else {
+                            doc.setTextColor(0, 0, 0);
+                        }
+                        doc.text(part, currentXPosition, yPosition);
+                        currentXPosition += doc.getTextWidth(part);
+                    });
+                    yPosition += 10;
+                    if (remark.image) {
+                        doc.addImage(remark.image, 'JPEG', 10, yPosition, 100, 100);
+                        yPosition += 110; // Adjust spacing for image
+                    }
                 });
             });
 
