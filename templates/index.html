@@ -40,6 +40,7 @@
         const remarkInput = document.getElementById('remarkInput');
         const imageInput = document.getElementById('imageInput');
         const remarksList = document.getElementById('remarks');
+        const emailField = document.getElementById('email');
 
         // Initialize task index and tasks data
         let currentTaskIndex = 0;
@@ -60,28 +61,58 @@
         // Function to update form fields based on task index
         function updateFormFields() {
             document.getElementById('taskNumber').value = tasks[currentTaskIndex].taskNumber;
-            document.getElementById('email').value = savedEmail;
+            emailField.value = savedEmail;
             remarksList.innerHTML = '';
             tasks[currentTaskIndex].remarks.forEach((remark, index) => {
                 const remarkLi = document.createElement('li');
-                const remarkTextarea = document.createElement('textarea');
-                remarkTextarea.value = remark.text;
-                remarkTextarea.addEventListener('keypress', (event) => {
-                    if (event.key === 'Enter') {
-                        tasks[currentTaskIndex].remarks[index].text = event.target.value;
-                        updateFormFields();
-                        event.preventDefault(); // prevent default Enter key behavior
-                    }
+                const remarkDiv = document.createElement('div');
+                const remarkText = document.createElement('span');
+                remarkText.innerHTML = remark.text.replace(/\*(.*?)\*/g, '<span style="color:red">$1</span>');
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.addEventListener('click', () => {
+                    const remarkTextarea = document.createElement('textarea');
+                    remarkTextarea.value = remark.text;
+                    remarkTextarea.addEventListener('keypress', (event) => {
+                        if (event.key === 'Enter') {
+                            tasks[currentTaskIndex].remarks[index].text = event.target.value;
+                            updateFormFields();
+                            event.preventDefault(); // prevent default Enter key behavior
+                        }
+                    });
+                    remarkDiv.replaceChild(remarkTextarea, remarkText);
                 });
-                remarkLi.appendChild(remarkTextarea);
+                remarkDiv.appendChild(remarkText);
+                remarkDiv.appendChild(editButton);
 
                 if (remark.image) {
                     const img = document.createElement('img');
                     img.src = remark.image;
                     img.style.maxWidth = '300px';
-                    remarkLi.appendChild(img);
+                    img.style.display = 'block';
+                    img.style.margin = '10px 0';
+                    const changeImageButton = document.createElement('button');
+                    changeImageButton.textContent = 'Change Image';
+                    changeImageButton.addEventListener('click', () => {
+                        const newImageInput = document.createElement('input');
+                        newImageInput.type = 'file';
+                        newImageInput.accept = 'image/*';
+                        newImageInput.addEventListener('change', (event) => {
+                            const newImage = event.target.files[0];
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                tasks[currentTaskIndex].remarks[index].image = e.target.result;
+                                updateFormFields();
+                            };
+                            reader.readAsDataURL(newImage);
+                        });
+                        newImageInput.click();
+                    });
+                    remarkDiv.appendChild(img);
+                    remarkDiv.appendChild(changeImageButton);
                 }
 
+                remarkLi.appendChild(remarkDiv);
                 remarksList.appendChild(remarkLi);
             });
         }
@@ -136,7 +167,7 @@
         // Event listener for form submission
         form.addEventListener('submit', (event) => {
             event.preventDefault();
-            const email = document.getElementById('email').value;
+            const email = emailField.value;
             savedEmail = email; // Save email to retain after submission
             const evaluations = tasks.map((task) => ({ taskNumber: task.taskNumber, remarks: task.remarks }));
 
@@ -153,22 +184,13 @@
                 doc.text(`Task Number: ${evaluation.taskNumber}`, 10, 20);
                 let yPosition = 30; // Initial y position
                 evaluation.remarks.forEach((remark, remarkIndex) => {
-                    let text = remark.text;
-                    let parts = text.split('*');
-                    let currentXPosition = 10;
-                    parts.forEach((part, partIndex) => {
-                        if (partIndex % 2 === 1) {
-                            doc.setTextColor(255, 0, 0);
-                        } else {
-                            doc.setTextColor(0, 0, 0);
-                        }
-                        doc.text(part, currentXPosition, yPosition);
-                        currentXPosition += doc.getTextWidth(part);
-                    });
+                    doc.text(`• ${remark.text.replace(/\*(.*?)\*/g, '($1)')}`, 10, yPosition);
                     yPosition += 10;
                     if (remark.image) {
-                        doc.addImage(remark.image, 'JPEG', 10, yPosition, 100, 100);
-                        yPosition += 110; // Adjust spacing for image
+                        const imgWidth = 115; // Decreased image size for PDF
+                        const imgHeight = 75; // Decreased image size for PDF
+                        doc.addImage(remark.image, 'JPEG', 10, yPosition, imgWidth, imgHeight);
+                        yPosition += imgHeight + 10; // Adjust spacing for image
                     }
                 });
             });
