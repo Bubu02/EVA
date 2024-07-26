@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Evaluation Form</title>
+    <style>
+        /* Add your custom styling here */
+    </style>
+</head>
+<body>
+    <h1>Task Evaluation Form</h1>
+
+    <form id="evaluationForm">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="Enter student's email" required><br>
+
+        <label for="taskNumber">Task Number:</label>
+        <input type="text" id="taskNumber" name="taskNumber" placeholder="Enter task number" required><br>
+
+        <label for="remarks">Remarks:</label>
+        <ul id="remarks"></ul>
+        <input type="text" id="remarkInput" placeholder="Enter remark">
+        <br>
+
+        <!-- Navigation buttons -->
+        <button type="button" id="previousBtn">Previous</button>
+        <button type="button" id="nextBtn">Next</button>
+        <button type="submit" id="submitBtn">Submit</button>
+    </form>
+
+    <script>
+        const form = document.getElementById('evaluationForm');
+        const previousBtn = document.getElementById('previousBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const remarkInput = document.getElementById('remarkInput');
+        const remarksList = document.getElementById('remarks');
+
+        // Initialize task index and tasks data
+        let currentTaskIndex = 0;
+        let tasks = [];
+
+        // Function to add a new task
+        function addTask(taskNumber) {
+            tasks.push({ taskNumber, remarks: [] });
+        }
+
+        // Add tasks dynamically (e.g., from user input or a database)
+        const numTasks = prompt("Enter the number of tasks:");
+        for (let i = 1; i <= numTasks; i++) {
+            addTask(`Task-${i}`);
+        }
+
+        // Function to update form fields based on task index
+        function updateFormFields() {
+            document.getElementById('taskNumber').value = tasks[currentTaskIndex].taskNumber;
+            remarksList.innerHTML = '';
+            tasks[currentTaskIndex].remarks.forEach((remark) => {
+                const remarkListItem = document.createElement('li');
+                remarkListItem.textContent = remark;
+                remarksList.appendChild(remarkListItem);
+            });
+        }
+
+        // Event listener for adding remarks
+        remarkInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                const remark = remarkInput.value.trim();
+                if (remark) {
+                    tasks[currentTaskIndex].remarks.push(remark);
+                    remarkInput.value = '';
+                    updateFormFields();
+                }
+            }
+        });
+
+        // Event listeners for navigation buttons
+        previousBtn.addEventListener('click', () => {
+            if (currentTaskIndex > 0) {
+                currentTaskIndex--;
+                updateFormFields();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentTaskIndex < tasks.length - 1) {
+                currentTaskIndex++;
+                updateFormFields();
+            }
+        });
+
+        // Event listener for form submission
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const evaluations = tasks.map((task) => ({ taskNumber: task.taskNumber, remarks: task.remarks }));
+            console.log('Evaluations submitted:', { email, evaluations });
+            // Handle form submission (e.g., send data to server)
+        });
+
+        // Initialize form fields
+        updateFormFields();
+    </script>
+</body>
+</html>
