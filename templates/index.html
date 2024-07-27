@@ -54,6 +54,8 @@
 
         // Add tasks dynamically (e.g., from user input or a database)
         const numTasks = prompt("Enter the number of tasks:");
+        savedEmail = prompt("Enter the email:");
+        emailField.value = savedEmail; // Set the email field value
         for (let i = 1; i <= numTasks; i++) {
             addTask(`Task-${i}`);
         }
@@ -164,6 +166,32 @@
             }
         });
 
+        // Function to draw text with red-colored parts
+        function drawColoredText(doc, text, x, y) {
+            const parts = text.split(/\*(.*?)\*/g);
+            let currentX = x;
+            let currentY = y;
+
+            parts.forEach((part, index) => {
+                const textWidth = doc.getTextWidth(part);
+                if (currentX + textWidth > 180) { // Adjust 180 to your PDF page width
+                    currentX = x;
+                    currentY += 5;
+                }
+
+                if (index % 2 === 1) {
+                    doc.setTextColor(255, 0, 0);
+                } else {
+                    doc.setTextColor(0, 0, 0);
+                }
+
+                doc.text(part, currentX, currentY);
+                currentX += textWidth;
+            });
+
+            doc.setTextColor(0, 0, 0); // Reset color
+        }
+
         // Event listener for form submission
         form.addEventListener('submit', (event) => {
             event.preventDefault();
@@ -175,6 +203,7 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
+            doc.setFontSize(12);
             doc.text(`Email: ${email}`, 10, 10);
 
             evaluations.forEach((evaluation, index) => {
@@ -184,11 +213,11 @@
                 doc.text(`Task Number: ${evaluation.taskNumber}`, 10, 20);
                 let yPosition = 30; // Initial y position
                 evaluation.remarks.forEach((remark, remarkIndex) => {
-                    doc.text(`• ${remark.text.replace(/\*(.*?)\*/g, '($1)')}`, 10, yPosition);
+                    drawColoredText(doc, `• ${remark.text}`, 10, yPosition);
                     yPosition += 10;
                     if (remark.image) {
                         const imgWidth = 115; // Decreased image size for PDF
-                        const imgHeight = 75; // Decreased image size for PDF
+                        const imgHeight = 75; // Maintain aspect ratio
                         doc.addImage(remark.image, 'JPEG', 10, yPosition, imgWidth, imgHeight);
                         yPosition += imgHeight + 10; // Adjust spacing for image
                     }
