@@ -1,23 +1,18 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Evaluation Form</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/static/css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <!-- Your HTML content here -->
     <h1>Task Evaluation Form</h1>
 
     <form id="evaluationForm">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" placeholder="Enter student's email" required><br>
-
-        <label for="taskNumber">Task Number:</label>
-        <input type="text" id="taskNumber" name="taskNumber" placeholder="Enter task number" required><br>
+        <p>Email: <span id="displayEmail"></span></p>
+        <p>Task Number: <span id="displayTaskNumber"></span></p>
 
         <label for="remarks">Remarks:</label>
         <ul id="remarks"></ul>
@@ -32,6 +27,7 @@
 
     <!-- Download button -->
     <button type="button" id="downloadBtn" style="display: none;">Download PDF</button>
-    <script src="script.js"></script>
+
+    <script src="/static/js/script.js"></script>
 </body>
 </html>

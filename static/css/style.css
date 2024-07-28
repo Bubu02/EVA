@@ -1,0 +1,47 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+label {
+    display: inline-block;
+    width: 100px;
+}
+
+input, textarea {
+    width: 300px;
+    margin: 5px 0;
+    padding: 5px;
+}
+
+textarea {
+    height: 100px;
+}
+
+button {
+    display: inline-block;
+    margin: 10px 5px;
+    padding: 10px 15px;
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#downloadBtn {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
