@@ -45,3 +45,12 @@ button:hover {
     right: 20px;
     top: 20px;
 }
+
+#displayEmail {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+#displayTaskNumber {
+    font-weight: bold;
+}

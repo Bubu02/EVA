@@ -24,7 +24,7 @@ const numTasks = prompt("Enter the number of tasks:");
 savedEmail = prompt("Enter the email:");
 displayEmail.textContent = savedEmail; // Set the email display value
 for (let i = 1; i <= numTasks; i++) {
-    addTask(`Task-${i}`);
+    addTask(`Task_${i.toString().padStart(2, '0')}`);
 }
 
 // Function to update form fields based on task index
@@ -168,14 +168,18 @@ form.addEventListener('submit', (event) => {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    doc.setFontSize(12);
+    doc.setFontSize(16);
+    doc.setFont('bold');
     doc.text(`Email: ${email}`, 10, 10);
+    doc.setFontSize(12);
 
     evaluations.forEach((evaluation, index) => {
         if (index > 0) {
             doc.addPage();
         }
+        doc.setFont('bold');
         doc.text(`Task Number: ${evaluation.taskNumber}`, 10, 20);
+        doc.setFont('normal');
         let yPosition = 30; // Initial y position
         evaluation.remarks.forEach((remark, remarkIndex) => {
             if (remark.image) {
@@ -207,21 +211,20 @@ form.addEventListener('submit', (event) => {
 
     // Display the download button
     downloadBtn.style.display = 'block';
+
+    // Event listener for download button
     downloadBtn.addEventListener('click', () => {
         doc.save('evaluation.pdf');
     });
 
-    // Show the form again
-    form.style.display = 'block';
     // Hide the navigation buttons again
-    previousBtn.style.display = 'inline-block';
-    nextBtn.style.display = 'inline-block';
-    submitBtn.style.display = 'inline-block';
-    remarkInput.style.display = 'block';
-    imageInput.style.display = 'block';
-
-    // Update the form fields with the saved email and task details
-    updateFormFields();
+    previousBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+    submitBtn.style.display = 'none';
+    remarkInput.style.display = 'none';
+    imageInput.style.display = 'none';
+    downloadBtn.style.display = 'inline-block';
 });
 
-updateFormFields(); // Initialize form fields on load
+// Initialize form fields on load
+updateFormFields();
